@@ -38,23 +38,23 @@ bool ArkLibrary::SpawnCustomDino(
 
 			if (facingModDegrees > 0.0)
 			{
-				FRotator rot = dino->RootComponentField()()->RelativeRotationField()();
+				FRotator rot = dino->RootComponentField()->RelativeRotationField();
 				rot.Yaw += facingModDegrees;
 				dino->SetActorRotation(rot); //todo: had to change from &rot with v2 (does it work?)
 			}
 
 			dino->AbsoluteBaseLevelField() = 1; //temp set to 1 in order to avoid random level assignment
 
-			APlayerState* playerState = aShooterPC->PlayerStateField()();
-			AShooterPlayerState* shooterPlayerState = static_cast<AShooterPlayerState*>(aShooterPC->PlayerStateField()());
+			APlayerState* playerState = aShooterPC->PlayerStateField();
+			AShooterPlayerState* shooterPlayerState = static_cast<AShooterPlayerState*>(aShooterPC->PlayerStateField());
 
-			dino->TamingTeamIDField() = aShooterPC->TargetingTeamField()();
+			dino->TamingTeamIDField() = aShooterPC->TargetingTeamField();
 
 			FString* playerName = new FString();
 			shooterPlayerState->GetPlayerName(playerName);
 			//NOTE: Getting the player name from playerState->GetPlayerNameField() causes crash
 
-			FString tamer = dino->TamerStringField()();
+			FString tamer = dino->TamerStringField();
 			tamer = *playerName;
 
 			//todo: memory leak? playerName not deleted 
@@ -66,7 +66,7 @@ bool ArkLibrary::SpawnCustomDino(
 			/*__int32 flag = *reinterpret_cast<__int32*>(reinterpret_cast<DWORD64>(dino) + static_cast<DWORD64>(0x128c));
 			*reinterpret_cast<__int32*>(reinterpret_cast<DWORD64>(dino) + static_cast<DWORD64>(0x128c)) = flag | 0x80000;*/
 
-			dino->TameDino(aShooterPC, false, 0); //todo: new arguments in v2 (ignoreMaxTameLimit and overrideTamingTeamId) (does it work?)
+			dino->TameDino(aShooterPC, false, 0, false, false); //todo: new arguments in v2 (ignoreMaxTameLimit and overrideTamingTeamId) (does it work?)
 
 			dino->BeginPlay();
 
@@ -82,7 +82,7 @@ bool ArkLibrary::SpawnCustomDino(
 			//option: ignore ally look
 			if (ignoreAllyLook) dinoEx->bIgnoreAllyLookField() = true;
 
-			UPrimalCharacterStatusComponent* status = dino->MyCharacterStatusComponentField()();
+			UPrimalCharacterStatusComponent* status = dino->MyCharacterStatusComponentField();
 			auto statusEx = reinterpret_cast<ArkExtensions::UPrimalCharacterStatusComponent*>(status);
 			if (status)
 			{
@@ -168,20 +168,20 @@ bool ArkLibrary::SpawnCustomDino(
 
 				UObject* object = Globals::StaticLoadObject(UObject::StaticClass(), nullptr, bpPathSaddleWStr.c_str(), nullptr, 0, 0, true);
 
-				if (object && object->IsA(UClass::StaticClass()))
+				if (object)
 				{
 					TSubclassOf<UPrimalItem> archetype;
 					archetype.uClass = reinterpret_cast<UClass*>(object);
 
-					AShooterCharacter* aShooterCharacter = static_cast<AShooterCharacter*>(aShooterPC->CharacterField()());
+					AShooterCharacter* aShooterCharacter = static_cast<AShooterCharacter*>(aShooterPC->CharacterField());
 
-					UPrimalItem* saddle = UPrimalItem::AddNewItem(archetype, dino->MyInventoryComponentField()(), true, false, 0.0, false, 0, false, 0.0, false, TSubclassOf<UPrimalItem>());
+					UPrimalItem* saddle = UPrimalItem::AddNewItem(archetype, dino->MyInventoryComponentField(), true, false, 0.0, false, 0, false, 0.0, false, TSubclassOf<UPrimalItem>(), 0.0);
 					if (saddleArmor >= 0)
 					{
 						unsigned short* statValues = saddle->ItemStatValuesField()();
 						if (statValues != nullptr) statValues[1] = (unsigned short)std::floor(((saddleArmor - 25.0) / 5.0) * 1000.0);
 
-						saddle->UpdatedItem();
+						saddle->UpdatedItem(true);
 					}
 				}
 
@@ -195,11 +195,11 @@ bool ArkLibrary::SpawnCustomDino(
 						TSubclassOf<UPrimalItem> archetype;
 						archetype.uClass = reinterpret_cast<UClass*>(object);
 
-						AShooterCharacter* aShooterCharacter = static_cast<AShooterCharacter*>(aShooterPC->CharacterField()());
+						AShooterCharacter* aShooterCharacter = static_cast<AShooterCharacter*>(aShooterPC->CharacterField());
 
 						for (int n = 0; n < it->count; n++)
 						{
-							UPrimalItem* item = UPrimalItem::AddNewItem(archetype, dino->MyInventoryComponentField()(), false, false, 0.0, false, it->quantity, false, 0.0, false, TSubclassOf<UPrimalItem>());
+							UPrimalItem* item = UPrimalItem::AddNewItem(archetype, dino->MyInventoryComponentField(), false, false, 0.0, false, it->quantity, false, 0.0, false, TSubclassOf<UPrimalItem>(), 0.0);
 						}
 					}
 				}
@@ -207,7 +207,7 @@ bool ArkLibrary::SpawnCustomDino(
 
 			if (imprint > 0.0)
 			{
-				long long playerId = aShooterPC->LinkedPlayerIDField()();
+				long long playerId = aShooterPC->LinkedPlayerIDField();
 				FString* playerName2 = new FString();
 				aShooterPC->GetPlayerCharacterName(playerName2);
 
@@ -229,7 +229,7 @@ bool ArkLibrary::SpawnCustomDino(
 				LODWORD(v76->CurrentStatusValues[0]) = (_DWORD)a2;*/
 
 				float* maxStatsValues = status->MaxStatusValuesField()();
-				float wildRandomScale = dino->WildRandomScaleField()();
+				float wildRandomScale = dino->WildRandomScaleField();
 				float* currentStatValues = status->CurrentStatusValuesField()();
 				currentStatValues[0] = maxStatsValues[0]; //health (calculated as maxStatsValues[0] * wildRandomScale; in server code)
 				currentStatValues[1] = maxStatsValues[1]; //stamina

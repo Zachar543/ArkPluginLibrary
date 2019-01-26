@@ -43,7 +43,7 @@ std::string ArkLibrary::GetUClassName(UClass* uClass) {
 	if (uClass == nullptr) return "[null]";
 
 	FString* className = new FString();
-	FName bp = uClass->NameField()();
+	FName bp = uClass->NameField();
 	bp.ToString(className);
 	std::string result = className->ToString();
 	delete className;
